@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Umawiania Spotkań</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📅 System Umawiania Spotkań</h1>
+            <p class="subtitle">Azure Functions + Cosmos DB</p>
+        </header>
+
+        <!-- Sekcja 1: Dodawanie osoby -->
+        <section class="card">
+            <h2>➕ Dodaj osobę do systemu</h2>
+            <form id="addPersonForm">
+                <div class="form-group">
+                    <label for="personName">Imię i nazwisko *</label>
+                    <input type="text" id="personName" name="name" required placeholder="np. Dr Jan Kowalski">
+                </div>
+
+                <div class="form-group">
+                    <label for="personEmail">Email *</label>
+                    <input type="email" id="personEmail" name="email" required placeholder="jan.kowalski@example.com">
+                </div>
+
+                <h3>⏰ Godziny pracy</h3>
+                <p class="help-text">Zaznacz dni, w które osoba przyjmuje i ustaw godziny pracy</p>
+
+                <div class="work-schedule">
+                    <!-- Poniedziałek -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="monday" checked>
+                            <label for="monday">Poniedziałek</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="monday-start" value="09:00">
+                            <span>-</span>
+                            <input type="time" id="monday-end" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Wtorek -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="tuesday" checked>
+                            <label for="tuesday">Wtorek</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="tuesday-start" value="09:00">
+                            <span>-</span>
+                            <input type="time" id="tuesday-end" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Środa -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="wednesday" checked>
+                            <label for="wednesday">Środa</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="wednesday-start" value="09:00">
+                            <span>-</span>
+                            <input type="time" id="wednesday-end" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Czwartek -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="thursday" checked>
+                            <label for="thursday">Czwartek</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="thursday-start" value="09:00">
+                            <span>-</span>
+                            <input type="time" id="thursday-end" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Piątek -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="friday" checked>
+                            <label for="friday">Piątek</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="friday-start" value="09:00">
+                            <span>-</span>
+                            <input type="time" id="friday-end" value="17:00">
+                        </div>
+                    </div>
+
+                    <!-- Sobota -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="saturday">
+                            <label for="saturday">Sobota</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="saturday-start" value="10:00">
+                            <span>-</span>
+                            <input type="time" id="saturday-end" value="14:00">
+                        </div>
+                    </div>
+
+                    <!-- Niedziela -->
+                    <div class="day-row">
+                        <div class="day-checkbox">
+                            <input type="checkbox" id="sunday">
+                            <label for="sunday">Niedziela</label>
+                        </div>
+                        <div class="time-inputs">
+                            <input type="time" id="sunday-start" value="10:00">
+                            <span>-</span>
+                            <input type="time" id="sunday-end" value="14:00">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>Dodaj osobę</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Sekcja 2: Rezerwacja spotkania -->
+        <section class="card">
+            <h2>📆 Umów spotkanie</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="selectPerson">Wybierz osobę *</label>
+                    <select id="selectPerson" required>
+                        <option value="">-- Wybierz osobę --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingDate">Data *</label>
+                    <input type="date" id="bookingDate" required>
+                </div>
+
+                <div id="slotsContainer" class="slots-container" style="display: none;">
+                    <label>Dostępne godziny:</label>
+                    <div id="availableSlots" class="slots-grid"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="clientName">Twoje imię i nazwisko *</label>
+                    <input type="text" id="clientName" required placeholder="Jan Nowak">
+                </div>
+
+                <div class="form-group">
+                    <label for="clientEmail">Twój email *</label>
+                    <input type="email" id="clientEmail" required placeholder="jan.nowak@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Opis spotkania (opcjonalnie)</label>
+                    <textarea id="description" rows="3" placeholder="Krótki opis celu spotkania..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="bookButton" disabled>
+                    <span>Zarezerwuj termin</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Sekcja 3: Lista osób -->
+        <section class="card">
+            <h2>👥 Osoby w systemie</h2>
+            <div id="personsList" class="persons-list">
+                <p class="loading">Ładowanie...</p>
+            </div>
+        </section>
+
+        <!-- Sekcja 4: Zarezerwowane spotkania -->
+        <section class="card">
+            <h2>📋 Twoje spotkania</h2>
+            <div class="filter-group">
+                <label for="filterPerson">Filtruj według osoby:</label>
+                <select id="filterPerson">
+                    <option value="">Wszystkie spotkania</option>
+                </select>
+            </div>
+            <div id="appointmentsList" class="appointments-list">
+                <p class="loading">Ładowanie...</p>
+            </div>
+        </section>
+
+        <!-- Toast notifications -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
