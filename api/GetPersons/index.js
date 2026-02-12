@@ -1,6 +1,8 @@
+const { getCosmosClient } = require("../cosmosClient");
+
 module.exports = async function (context, req) {
   try {
-    const cosmosClient = context.bindings.cosmosClient;
+    const cosmosClient = getCosmosClient();
     const database = cosmosClient.database("SpotkaniaDB");
     const container = database.container("Persons");
 
