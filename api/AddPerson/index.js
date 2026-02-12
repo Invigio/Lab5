@@ -11,7 +11,10 @@ module.exports = async function (context, req) {
       };
     }
 
+    context.log("AddPerson: Attempting to get Cosmos client...");
     const cosmosClient = getCosmosClient();
+    context.log("AddPerson: Cosmos client obtained, connecting to database...");
+
     const database = cosmosClient.database("SpotkaniaDB");
     const container = database.container("Persons");
 
@@ -26,17 +29,21 @@ module.exports = async function (context, req) {
 
     await container.items.create(person);
 
-    context.log(`Person added: ${person.id}`);
+    context.log(`Person added successfully: ${person.id}`);
 
     return {
       status: 201,
       body: person
     };
   } catch (error) {
-    context.log(`Error in AddPerson: ${error.message}`);
+    context.log(`AddPerson ERROR: ${error.message}`);
+    context.log(`Stack: ${error.stack}`);
     return {
       status: 500,
-      body: { error: `Failed to add person: ${error.message}` }
+      body: {
+        error: `Failed to add person: ${error.message}`,
+        details: error.stack
+      }
     };
   }
 };

@@ -11,7 +11,10 @@ module.exports = async function (context, req) {
       };
     }
 
+    context.log("BookAppointment: Attempting to get Cosmos client...");
     const cosmosClient = getCosmosClient();
+    context.log("BookAppointment: Cosmos client obtained");
+
     const database = cosmosClient.database("SpotkaniaDB");
     const container = database.container("Persons");
 
@@ -73,6 +76,8 @@ module.exports = async function (context, req) {
     // Update person in database
     await container.item(personId, personId).replace(person);
 
+    context.log(`BookAppointment: Appointment booked successfully for ${clientName}`);
+
     return {
       status: 201,
       body: {
@@ -81,10 +86,14 @@ module.exports = async function (context, req) {
       }
     };
   } catch (error) {
-    context.log(`Error in BookAppointment: ${error.message}`);
+    context.log(`BookAppointment ERROR: ${error.message}`);
+    context.log(`Stack: ${error.stack}`);
     return {
       status: 500,
-      body: { error: `Failed to book appointment: ${error.message}` }
+      body: {
+        error: `Failed to book appointment: ${error.message}`,
+        details: error.stack
+      }
     };
   }
 };
